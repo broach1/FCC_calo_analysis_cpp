@@ -6,16 +6,20 @@ from ROOT import CaloAnalysis_simple, TCanvas, TFile, TF1, gPad
 
 PARTICLE = "e"
 X0 = 8.25
-ENERGY = 20
-PART = [1] 
+ENERGY = 500
+PART = [1,2,3,4,5,6,7,8,9,10] 
 SUFFIX = ""
+SF=18.44
 
 
-for i in PART:
 
-    SF=6.67
+
+
+
+for i in [PART]:
+
     #filename="root://eospublic//eos/fcc/users/n/novaj/July11_highStat/e"+str(ENERGY)+"_b0_LAr3mm_Lead2mm_rangeCut100mikrons_part"+str(i)+".root" 
-    filename="root://eospublic//eos/fcc/users/b/broach/July11/e"+str(ENERGY)+"_n10000_lar3_lead2_part"+str(i)+".root"
+    filename="root://eospublic//eos/fcc/users/b/broach/July11/e"+str(ENERGY)+"_n10000_lar"+str(LAR)+"_lead"+str(LEAD)+"_part"+str(PART)+".root"
     #filename="/afs/cern.ch/user/b/broach/FCCSW_updated/FCCSW/output.root"
 
     print "Processing file ",filename
@@ -36,9 +40,10 @@ for i in PART:
     #c1.cd(4)
     #ma.histClass.h_res_sf.Draw()
     
-    f2 = TFile("output-histo-"+PARTICLE+str(ENERGY)+"-b0-"+SUFFIX+"-part"+str(i)+".root", "recreate")
+    f2 = TFile("output-histo-"+PARTICLE+str(ENERGY)+"-b0-"+"lar"+str(LAR)+"-lead"+str(LEAD)+"-part"+str(i)+".root", "recreate")
     ma.histClass.h_res_sf.Write()
     ma.histClass.h_res_sf_25X0.Write()
+    ma.histClass.h_res_sf_27X0.Write()
     ma.histClass.h_res_sf_30X0.Write()
     ma.histClass.h_res_sf_35X0.Write()
     ma.histClass.h_res_sf_40X0.Write()

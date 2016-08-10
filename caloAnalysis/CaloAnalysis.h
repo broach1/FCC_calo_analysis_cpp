@@ -14,7 +14,7 @@ namespace podio {
 class CaloAnalysis {
 
  public:
-  CaloAnalysis(const double sf, const double ENE, const std::string particle);
+  CaloAnalysis(const double sf, const double x0, const double ENE, const std::string particle);
   ~CaloAnalysis();
 
   void loop(const std::string filename);
@@ -23,6 +23,16 @@ class CaloAnalysis {
 
   TH1F* hitenergy;
   TH1F* cellenergy;
+  TH1F* h_res_sf;
+  TH1F* h_res_sf_25X0;
+  TH1F* h_res_sf_27X0;
+  TH1F* h_res_sf_30X0;
+  TH1F* h_res_sf_35X0;
+  TH1F* h_res_sf_40X0;
+  TH1F* h_res_sf_45X0;
+  TH1F* h_res_sf_50X0;
+  TH1F* h_res_sf_55X0;
+  TH1F* h_res_sf_60X0;
   TH1F* longprofile;
   TH1F* hitphi;
   TH1F* deltaphi;
@@ -54,6 +64,7 @@ class CaloAnalysis {
  private:
   const double GeV = 1000;
   double SF = 1.0;
+  double X0 = 1.0;
   TString PARTICLE = "e";
   double ENERGY = 100.0;
   static const int NLAYERS_MAX = 500;
@@ -62,6 +73,16 @@ class CaloAnalysis {
   // const double dr = 4.24+2.44;
   double SumE_layer[NLAYERS_MAX];
   double SumE_hit_ecal;
+  double SumE_hit_ecal_25X0;
+  double SumE_hit_ecal_30X0;
+  double SumE_hit_ecal_35X0;
+  double SumE_hit_ecal_40X0;
+  double SumE_hit_ecal_45X0;
+  double SumE_hit_ecal_50X0;
+  double SumE_hit_ecal_55X0;
+  double SumE_hit_ecal_60X0;
+
+  double rho;
   unsigned int nlayers;
   double dr;
   TH1F* phi_e;

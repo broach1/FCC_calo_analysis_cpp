@@ -33,12 +33,13 @@
 #include <bitset>
 
 
-CaloAnalysis::CaloAnalysis(const double sf, const double ENE, const std::string particle) 
+CaloAnalysis::CaloAnalysis(const double sf, const double x0, const double ENE, const std::string particle) 
 {
 
   TH1::AddDirectory(kFALSE);
 
   SF = sf;
+  X0 = x0;
   PARTICLE=particle;
   ENERGY = ENE;
 

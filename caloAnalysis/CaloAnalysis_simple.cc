@@ -4,11 +4,9 @@
 #include "podio/EventStore.h"
 #include "podio/ROOTReader.h"
 
-#include "datamodel/EventInfoCollection.h"
 #include "datamodel/MCParticleCollection.h"
-#include "datamodel/GenVertexCollection.h"
-#include "datamodel/CaloClusterCollection.h"
 #include "datamodel/CaloHitCollection.h"
+#include "datamodel/CaloClusterCollection.h"
 
 // ROOT
 #include "TObject.h"
@@ -29,17 +27,18 @@
 #include <bitset>
 
 
-CaloAnalysis_simple::CaloAnalysis_simple(const double sf, const double ENE, const TString particle) 
+CaloAnalysis_simple::CaloAnalysis_simple(const double sf, const double x0, const double ENE, const TString particle) 
 {
 
   TH1::AddDirectory(kFALSE);
 
   SF = sf;
+  X0 = x0;
   PARTICLE=particle;
   ENERGY = ENE;
 
   //Histograms initialization
-  histClass = new HistogramClass(SF, ENERGY, PARTICLE);
+  histClass = new HistogramClass(SF, X0, ENERGY, PARTICLE);
   histClass->Initialize_histos();
 }
 
@@ -79,7 +78,7 @@ void CaloAnalysis_simple::loop(const std::string filename) {
   unsigned nEvents = reader.getEntries();
   std::cout << "Number of events: " << nEvents << std::endl;
   for(unsigned i=0; i<nEvents; ++i) {
-    if(i%1000==0) std::cout<<"reading event "<<i<<std::endl;
+    if(i%50==0) std::cout<<"reading event "<<i<<std::endl;
     if(i>11) verbose = false;
 
     processEvent(store, verbose, reader);
@@ -98,51 +97,143 @@ void CaloAnalysis_simple::loop(const std::string filename) {
 void CaloAnalysis_simple::processEvent(podio::EventStore& store, bool verbose,
 				podio::ROOTReader& reader) {
 
-
-  // read event information
-  const fcc::EventInfoCollection* evinfocoll(nullptr);
-  bool evinfo_available = store.get("EventInfo", evinfocoll);
-  if(evinfo_available) {
-    auto evinfo = evinfocoll->at(0);
-
-   if(verbose)
-      std::cout << "event number " << evinfo.Number() << std::endl;
-  }
-
   //Get the collections
   const fcc::MCParticleCollection*  colMCParticles(nullptr);
-  const fcc::GenVertexCollection*  colGenVertex(nullptr);
-  const fcc::CaloClusterCollection* colECalCluster(nullptr);
   const fcc::CaloHitCollection*     colECalHit(nullptr);
+  const fcc::CaloClusterCollection*     colECalCluster(nullptr);
+
  
   bool colMCParticlesOK = store.get("GenParticles", colMCParticles);
-  bool colGenVertexOK =store.get("GenVertices", colGenVertex);
-  
-  bool colECalClusterOK = store.get("ECalClusters" , colECalCluster);
   bool colECalHitOK     = store.get("ECalHits" , colECalHit);
+  bool colECalClusterOK     = store.get("ECalClusters" , colECalCluster);
+
 
   //Total hit energy per event
   SumE_hit_ecal = 0.;
+  SumE_hit_ecal_25X0 = 0.;
+  SumE_hit_ecal_27X0 = 0.;
+  SumE_hit_ecal_30X0 = 0.;
+  SumE_hit_ecal_35X0 = 0.;
+  SumE_hit_ecal_40X0 = 0.;
+  SumE_hit_ecal_45X0 = 0.;
+  SumE_hit_ecal_50X0 = 0.;
+  SumE_hit_ecal_55X0 = 0.;
+  SumE_hit_ecal_60X0 = 0.;
+
   
-  //Hit & cluster collection
-  if (colECalClusterOK && colECalHitOK) {
+  //Hit collection
+  if (colECalHitOK && colECalHitOK) {
     if (verbose) {
       std::cout << " Collections: "          << std::endl;
-      std::cout << " -> #ECalClusters:     " << colECalCluster->size()    << std::endl;;
+      std::cout << " -> #ECalClusters:     " << colECalCluster->size()    << std::endl;
     }
     //Loop through the collection
-    auto& iehit=colECalHit->begin();
     for (auto& iecluster=colECalCluster->begin(); iecluster!=colECalCluster->end(); ++iecluster) 
         {
-          //if (verbose) std::cout << "ECal cluster energy " << iecluster->Core().Energy << std::endl;
+          //if (verbose) std::cout << "ECal hit energy " << iehit->Core().Energy << std::endl;
+	  double rho = TMath::Sqrt( TMath::Power(iecluster->Core().position.X,2) + TMath::Power(iecluster->Core().position.Y,2) ) - 2700.0 ;
+	  //offset of 2700 is to account for the detector starting at rho=2700mm
+
           SumE_hit_ecal += iecluster->Core().Energy;
+
+	  
+	  if (rho/X0 <= 25.){
+	    SumE_hit_ecal_25X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_27X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_30X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_35X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_40X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+
+	  }
+
+	  else if (rho/X0 <= 27.){
+	    SumE_hit_ecal_27X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_30X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_35X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_40X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+
+	  }
+
+	  else if (rho/X0 <= 30.){
+	    SumE_hit_ecal_30X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_35X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_40X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+
+	  }
+
+	  else if (rho/X0 <= 35.){
+	    SumE_hit_ecal_35X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_40X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+
+	  }
+
+	  else if (rho/X0 <= 40.){
+	    SumE_hit_ecal_40X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+	  }
+
+	  else  if (rho/X0 <= 45.){
+	    SumE_hit_ecal_45X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+	  }
+
+	  else if (rho/X0 <= 50.){
+	    SumE_hit_ecal_50X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+	  }
+
+	  else if (rho/X0 <= 55.){
+	    SumE_hit_ecal_55X0 += iecluster->Core().Energy;
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+	  }
+
+	  else if (rho/X0 <= 60.){
+	    SumE_hit_ecal_60X0 += iecluster->Core().Energy;
+	  }
+	  
+
+
 	}
 
-    if (verbose) std::cout << "Total hit energy: " << SumE_hit_ecal << " hit collection size: " << colECalHit->size() << std::endl;
+    if (verbose) std::cout << "Total hit energy: " << SumE_hit_ecal << " hit collection size: " << colECalCluster->size() << std::endl;
 
     //Fill histograms
     histClass->h_hitEnergy->Fill(SumE_hit_ecal/GeV);
     histClass->h_cellEnergy->Fill(SumE_hit_ecal*SF/GeV);
+    histClass->h_res_sf->Fill(SumE_hit_ecal*SF);
+    histClass->h_res_sf_25X0->Fill(SumE_hit_ecal_25X0*SF);
+    histClass->h_res_sf_27X0->Fill(SumE_hit_ecal_27X0*SF);
+    histClass->h_res_sf_30X0->Fill(SumE_hit_ecal_30X0*SF);
+    histClass->h_res_sf_35X0->Fill(SumE_hit_ecal_35X0*SF);
+    histClass->h_res_sf_40X0->Fill(SumE_hit_ecal_40X0*SF);
+    histClass->h_res_sf_45X0->Fill(SumE_hit_ecal_45X0*SF);
+    histClass->h_res_sf_50X0->Fill(SumE_hit_ecal_50X0*SF);
+    histClass->h_res_sf_55X0->Fill(SumE_hit_ecal_55X0*SF);
+    histClass->h_res_sf_60X0->Fill(SumE_hit_ecal_60X0*SF);
+
+
 
   }
   else {
@@ -153,11 +244,10 @@ void CaloAnalysis_simple::processEvent(podio::EventStore& store, bool verbose,
 
  
   //MCParticle and Vertices collection 
-  if (colMCParticlesOK && colGenVertexOK) {
+  if (colMCParticlesOK) {
     if (verbose) {
       std::cout << " Collections: "          << std::endl;
       std::cout << " -> #MCTruthParticles:     " << colMCParticles->size()    << std::endl;
-      std::cout << " -> #GenVertices:     " << colGenVertex->size()    << std::endl;
     }
     //Loop through the collection   
     for (auto& iparticle=colMCParticles->begin(); iparticle!=colMCParticles->end(); ++iparticle) {
